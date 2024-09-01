@@ -1,0 +1,26 @@
+
+
+#menu * {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 2rem;
+    margin-right: 2rem;
+}
+
+.menu-footer{
+    justify-self: end !important;
+}
+
+#menu #btn-panel{
+    width: 100%;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
+}
+
+.title-text{
+    margin: 0rem !important;
+}
+
+.title-subtext{
+    font-size: 1rem;
+}

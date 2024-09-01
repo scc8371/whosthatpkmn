@@ -54,7 +54,7 @@ async function updatePkmnOfDay() {
                 sprite: ${pokemon.image},
                 types: ${pokemon.general.types},
                 pokedexEntry: ${pokemon.special_questions.pokedex_info},
-                date: ${getDate()})}   
+                date: ${getDate()}   
             } into pkmn
             `).then(console.log(`[SERVER] updating pokemon of the day to ${pokemon.name}!`));
     }
@@ -80,20 +80,29 @@ app.get("/api", (req, res) => {
     });
 });
 
+app.get("/audio/:id", (req, res) => {
+
+});
+
 app.listen(process.env.PORT, () => {
 
     console.log(`SERVER STARTED ON PORT ${process.env.PORT}`)
 });
 
 const rule = new RecurrenceRule();
-rule.hour = 0;
+rule.minute = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+rule.tz = "America/New_York";
 
-scheduleJob(rule, () => {
-    updatePkmnOfDay();
+scheduleJob(rule, async () => {
+    if(await pokemonOfDayExists() == false) updatePkmnOfDay();
 });
 
 function getDate(){
     return new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 }
 
+async function pokemonOfDayExists(){
+    let pkmnList = await getActivePokemon();
+    return pkmnList.length > 0;
+}
 
