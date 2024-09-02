@@ -1,16 +1,20 @@
+// Created by Sami Chamberlain
+//Purpose: Logic for the 'Pokemon Wordle' demo. 
+
 import React, { useEffect, useRef, useState } from 'react'
 import Button from "./Button"
 
 import "../../styles/Game.css"
-import { BackendDataItem } from '../utils'
+import { BackendDataItem, normalizeString, censorPortionOfString } from '../utils'
 
 
 interface Props {
   active: BackendDataItem;
+  onGameOver: (win: boolean) => void;
 }
 
 
-const Game: React.FC<Props> = ({ active }) => {
+const Game: React.FC<Props> = ({ active, onGameOver }) => {
   const [hintsLeft, setHintsLeft] = useState(5);
   const [currHint, setCurrHint] = useState(1);
 
@@ -19,46 +23,42 @@ const Game: React.FC<Props> = ({ active }) => {
 
   const pkmnImageRef = useRef<HTMLImageElement>(null);
 
-  function normalizeString(str: string) {
-    return str
-      .toLowerCase() // Convert to lower case
-      .replace(/[-_\s]+/g, ''); // Remove hyphens, underscores, and spaces
-  }
-
-  function censorPortionOfString(text: string, censorRegex: string){
-    let regex = new RegExp(censorRegex, 'gi');
-
-    return text.replace(regex, '[REDACTED]');
-  }
-
   useEffect(() => {
 
     if (!hintRef.current) return;
 
     switch (currHint) {
+      //displays pokemon cry
       case 1:
         hintRef.current.innerHTML = "";
         hintRef.current.innerHTML += `<audio controls autoplay title='Pokemon Cry'><source src=${active.cry} type="audio/ogg"></audio>`
         break;
+      //displays pokemon classification
       case 2:
         let audio = hintRef.current.querySelector("audio");
-        if(audio) audio.autoplay = false;
+        if (audio) audio.autoplay = false; // makes it so the audio doesn't autoplay constantly.
 
         hintRef.current.innerHTML += `<p>The ${active.class}</p>`
-      break;
+        break;
+      //shows the pokedex number of the pokemon
       case 3:
         hintRef.current.innerHTML += `<p>Pokedex Number: ${active.pokedexNum}</p>`
-      break;
+        break;
+      //shwos the pokedex entry of the pokemon.
       case 4:
-        hintRef.current.innerHTML += censorPortionOfString(active.pokedexEntry, active.name);
-      break;
+        hintRef.current.innerHTML += `<p>${censorPortionOfString(active.pokedexEntry, active.name)}</p>`
+        break;
+
+      //shows a blackened image of the pokemon
       case 5:
-        hintRef.current.innerHTML += `<img src=${active.sprite} ref=${{pkmnImageRef}} class='pkmn-img img-hidden'></img>`
-      break;
+        hintRef.current.innerHTML += `<img src=${active.sprite} ref=${{ pkmnImageRef }} class='pkmn-img img-hidden'></img>`
+        break;
+
+      //reveals the full image of the pokemon.
       case 6:
         let pkmnImg = hintRef.current.querySelector(".pkmn-img");
         pkmnImg?.classList.remove('img-hidden');
-      break;
+        break;
       default:
         hintRef.current.innerHTML = '';
     }
@@ -95,16 +95,17 @@ const Game: React.FC<Props> = ({ active }) => {
                 let pkmnName = normalizeString(active.name.trim());
 
                 if (guess === pkmnName) {
-                    //win!
-                    
+                  //win!
+                  onGameOver(true);
                 }
                 else {
                   responseRef.current.value = "";
                   setCurrHint(currHint + 1);
                   setHintsLeft(hintsLeft - 1);
 
-                  if(hintsLeft <= 0){
+                  if (hintsLeft <= 0) {
                     //player did not win.
+                    onGameOver(false);
                   }
                 }
               }

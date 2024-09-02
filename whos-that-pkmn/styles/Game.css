@@ -51,7 +51,10 @@
 
 #hint-area {
     width: 100% !important;
+    display: flex;
+    flex-direction: column !important;
 }
+
 
 #hint-notif {
     width: 100%;

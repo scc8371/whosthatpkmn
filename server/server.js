@@ -9,6 +9,8 @@ const app = express();
 
 const pkmnAPI = new PokeAPI();
 
+let pkmnOfDayExists = false;
+
 async function getActivePokemon() {
     const db = await new Database({
         url: process.env.ARANGO_URL,
@@ -32,6 +34,7 @@ async function getActivePokemon() {
 }
 
 async function updatePkmnOfDay() {
+    if (await pokemonOfDayExists()) return;
 
     const db = await new Database({
         url: process.env.ARANGO_URL,
@@ -56,14 +59,13 @@ async function updatePkmnOfDay() {
                 pokedexEntry: ${pokemon.special_questions.pokedex_info},
                 date: ${getDate()}   
             } into pkmn
-            `).then(console.log(`[SERVER] updating pokemon of the day to ${pokemon.name}!`));
+            `).then(console.log(`[SERVER] updating pokemon of the day to ${pokemon.name}!`))
+            .then(pkmnOfDayExists = true);
     }
     catch (error) {
         console.error("Error updating pokemon of the day! : ", error);
     }
 }
-
-
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -80,29 +82,53 @@ app.get("/api", (req, res) => {
     });
 });
 
-app.get("/audio/:id", (req, res) => {
+app.get("/time", (req, res) => {
+    //return time in ms until reset. 
 
+    const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+    const currentDate = new Date(now);
+    const midnight = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
+
+    const timeToNextPuzzle = midnight.getTime() - currentDate.getTime();
+
+    console.log(timeToNextPuzzle);
+
+    res.json(timeToNextPuzzle);
 });
 
 app.listen(process.env.PORT, () => {
 
     console.log(`SERVER STARTED ON PORT ${process.env.PORT}`)
+    pkmnOfDayExists = false;
 });
 
 const rule = new RecurrenceRule();
-rule.minute = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+rule.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 rule.tz = "America/New_York";
 
+const resetRule = new RecurrenceRule();
+resetRule.hour = 0;
+resetRule.minute = 0;
+resetRule.second = 0;
+resetRule.tz = "America/New_York";
+
 scheduleJob(rule, async () => {
-    if(await pokemonOfDayExists() == false) updatePkmnOfDay();
+    if (!pkmnOfDayExists) {
+        updatePkmnOfDay();
+    }
 });
 
-function getDate(){
+scheduleJob(resetRule, () => {
+    pkmnOfDayExists = false;
+});
+
+function getDate() {
     return new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 }
 
-async function pokemonOfDayExists(){
+async function pokemonOfDayExists() {
     let pkmnList = await getActivePokemon();
+    pkmnOfDayExists = pkmnList.length > 0;
     return pkmnList.length > 0;
 }
 

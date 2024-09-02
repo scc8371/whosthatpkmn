@@ -1,21 +1,22 @@
-body{
+body {
     background-color: black !important;
     color: white;
 
 }
 
-.panel{
+.panel {
 
     min-width: 500px;
     min-height: 500px;
 
+    max-width: 500px;
 
     display: flex;
     flex-flow: column;
     justify-content: center;
     align-items: center;
 
-    position: absolute; 
+    position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -27,5 +28,21 @@ body{
 
     border-radius: 10px;
 
-    
+
+}
+
+@media screen and (max-width: 600px) {
+    .panel {
+        min-width: 250px;
+        min-height: 300px;
+
+        max-width: 300px;
+        
+        top: 50%;
+    }
+
+    .panel h1{
+        font-size: 1.5rem !important;
+        margin: 0rem !important;
+    }
 }

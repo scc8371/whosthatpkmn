@@ -14,11 +14,21 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const goToGame = () => setState(State.GAME);
-  const goToGameOver = () => setState(State.OVER);
-  const goToMenu = () => setState(State.MENU);
+
+  const goToMenu = () => {
+    setState(State.MENU);
+    setWon(false);
+  }
+
+  const onGameOver = (win: boolean) => {
+    setState(State.OVER);
+    setWon(win);
+  }
+
+  const [won, setWon] = useState(false);
 
 
-  async function fetch() {
+  async function fetchPkmnInfo() {
     const res = await axios.get('http://3.21.156.202:5000/api', {
       headers: { "Content-Type": "application/json" }
     });
@@ -27,8 +37,8 @@ function App() {
   }
 
   useEffect(() => {
-    fetch();
-    
+    fetchPkmnInfo();
+
   }, []);
 
   return (
@@ -38,8 +48,8 @@ function App() {
         :
         <div>
           {state === State.MENU && <Menu onStart={goToGame}></Menu>}
-          {state === State.GAME && <Game active={backendData[0]}></Game>}
-          {state === State.OVER && <GameOver></GameOver>}
+          {state === State.GAME && <Game active={backendData[0]} onGameOver={onGameOver}></Game>}
+          {state === State.OVER && <GameOver won={won} active={backendData[0]} onReturnMenu={goToMenu}></GameOver>}
         </div>
       }
     </>
