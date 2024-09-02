@@ -1,6 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+
 const { Database, aql } = require('arangojs');
 const { schedule, scheduleJob, RecurrenceRule } = require("node-schedule");
 const { PokeAPI } = require("./pokeapi/pokeAPI.js");
@@ -73,6 +77,18 @@ app.use((req, res, next) => {
     next();
 });
 
+const sslServer = https.createServer({
+    key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+}, app);
+
+sslServer.listen(process.env.PORT, () => {
+
+    console.log(`[SECURE SERVER] SERVER STARTED ON PORT ${process.env.PORT}`)
+    pkmnOfDayExists = false;
+});
+
+
 let pkmnData = undefined;
 app.get("/api", (req, res) => {
     //gets pokemon data from arangoDB, logs it.
@@ -81,6 +97,8 @@ app.get("/api", (req, res) => {
         res.json(pkmnData);
     });
 });
+
+
 
 app.get("/time", (req, res) => {
     //return time in ms until reset. 
@@ -91,19 +109,12 @@ app.get("/time", (req, res) => {
 
     const timeToNextPuzzle = midnight.getTime() - currentDate.getTime();
 
-    console.log(timeToNextPuzzle);
-
     res.json(timeToNextPuzzle);
 });
 
-app.listen(process.env.PORT, () => {
-
-    console.log(`SERVER STARTED ON PORT ${process.env.PORT}`)
-    pkmnOfDayExists = false;
-});
 
 const rule = new RecurrenceRule();
-rule.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+rule.minute = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 rule.tz = "America/New_York";
 
 const resetRule = new RecurrenceRule();

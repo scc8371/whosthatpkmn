@@ -29,7 +29,7 @@ function App() {
 
 
   async function fetchPkmnInfo() {
-    const res = await axios.get('http://3.21.156.202:5000/api', {
+    const res = await axios.get('https://3.21.156.202:5000/api', {
       headers: { "Content-Type": "application/json" }
     });
     setBackendData(res.data);
