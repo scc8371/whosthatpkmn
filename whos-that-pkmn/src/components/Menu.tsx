@@ -17,7 +17,7 @@ const Menu: React.FC<Props> = ({ onStart }) => {
   const [time, setTime] = useState(0.0)
 
   async function fetchTimeInfo() {
-    const res = await axios.get('https://3.21.156.202:5000/time', {
+    const res = await axios.get('https://games.samichamberlain.com/pokemon-wordle/time', {
       headers: { "Content-Type": "application/json" }
     });
 
